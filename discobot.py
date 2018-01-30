@@ -4,10 +4,14 @@ from discord.ext import commands
 import random
 import sqlite3
 from cytaty import Cytaty
+from minus5 import Minus5
+from datetime import datetime
 
 client = discord.Client()
 conn = sqlite3.connect('discobot.db')
 cytat = Cytaty(conn)
+minus5 = Minus5(conn)
+startup_time = datetime.now()
 
 @client.event
 async def on_message(message):
@@ -62,8 +66,36 @@ async def on_message(message):
             msg = 'Nie znaleziono cytatu'
 
         await client.send_message(message.channel, msg)
-
-
+        
+    if message.content.startswith('!topminus5'):
+        stats = sorted(minus5.get_stats(), key=lambda x: x[1], reverse=True)
+        msg = 'Statystyki obrażania matek:\n'
+        for user_id, count in stats:
+            user_data = await client.get_user_info(user_id)
+            msg += user_data.display_name + ': ' + str(count * -5) + ' punktów\n'
+            
+        await client.send_message(message.channel, msg)
+        
+    if message.content.startswith('!recalcminus5') and (message.author.name == "negocki" or message.author.name == "Kristopher38"):
+        print('Recalculating minus5 stats, this might take a while')
+        server_logs = []
+        recalc_stats = {}
+        
+        for channel in client.get_all_channels():
+            channel_logs = client.logs_from(channel, limit=10000, before=startup_time) # hardcoded 10k messages limit
+            async for msg in channel_logs:
+                for reaction in msg.reactions:
+                    if reaction.custom_emoji:
+                        if reaction.emoji.name == "minus5":
+                            if msg.author.id in recalc_stats:
+                                recalc_stats[msg.author.id] += reaction.count
+                            else:
+                                recalc_stats[msg.author.id] = reaction.count
+                                
+        minus5.recalculate_stats(recalc_stats)
+        print('Recalculating finished')
+        await client.send_message(message.channel, 'Recalculating finished')
+            
 @client.event
 async def on_ready():
     print('Logged in as')
@@ -72,5 +104,17 @@ async def on_ready():
     print('------')
     playing = discord.Game(name="!help")
     await client.change_presence(game=playing)
+
+@client.event
+async def on_reaction_add(reaction, user):
+    if reaction.custom_emoji:
+        if reaction.emoji.name == "minus5":
+            minus5.increment_user(reaction.message.author)
+        
+@client.event
+async def on_reaction_remove(reaction, user):
+    if reaction.custom_emoji:
+        if reaction.emoji.name == "minus5":
+            minus5.decrement_user(reaction.message.author)
 
 client.run('MzU1NDMyNTY2ODIxNjE3Njc1.DJMt-Q.FKP0s7QFgcHnCKd8kHODwMqe3hk')
