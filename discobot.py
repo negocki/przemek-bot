@@ -3,15 +3,21 @@ import asyncio
 from discord.ext import commands
 import random
 import sqlite3
+
 from cytaty import Cytaty
+from wykop_features import WykopFeatures
 from minus5 import Minus5
 from datetime import datetime
 
 client = discord.Client()
 conn = sqlite3.connect('discobot.db')
+
 cytat = Cytaty(conn)
+wykop = WykopFeatures()
 minus5 = Minus5(conn)
+
 startup_time = datetime.now()
+
 
 @client.event
 async def on_message(message):
@@ -24,7 +30,12 @@ async def on_message(message):
         await client.send_message(message.channel, msg)
 
     if message.content.startswith('!help'):
-        msg = 'Lista komend: \n !cytat - losowy cytat \n !cytat [numer] - konkretny cytat \n !addcytat - dodawanie cytatu'
+        msg = 'Lista komend:\n!wykop - losowy wpis z gorących mirko \n !cytat - losowy cytat \n !cytat [numer] - konkretny cytat \n !addcytat - dodawanie cytatu'
+        await client.send_message(message.channel, msg)
+
+    if message.content.startswith('!wykop'):  # mirko
+        entry = wykop.get_random_hot()
+        msg = '```@{} - {} - {} głosów```\n{}'.format(entry[1],entry[4],entry[3],entry[5])
         await client.send_message(message.channel, msg)
 
     if message.content.startswith('!bachu'):
