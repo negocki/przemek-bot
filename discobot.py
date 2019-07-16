@@ -65,7 +65,7 @@ async def on_message(message):
         cytat.dodaj_cytat(cytat_n[0],cytat_n[1])
 
     if message.content.startswith('!cytat'):
-        cytat_g = ""
+        cytat_g =""
         if(len(message.content) > 6):  # czy podano numer cytatu
             numer_cytatu = int(message.content[7:])
             cytat_g = cytat.cytat(numer_cytatu)
