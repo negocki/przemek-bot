@@ -30,7 +30,7 @@ async def on_message(message):
         await message.channel.send(msg)
 
     if message.content.startswith('!help'):
-        msg = '```Lista komend:\n!wykop - losowy wpis z gorących mirko \n!cytat - losowy cytat \n!cytat [numer] - konkretny cytat \n!addcytat - dodawanie cytatu```'
+        msg = '```Lista komend:\n!wykop - losowy wpis z gorących mirko \n!cytat - losowy cytat \n!cytat [numer] - konkretny cytat \n!addcytat - dodawanie cytatu \n!topminus5```'
         await message.channel.send(msg)
 
     if message.content.startswith('!wykop'):  # mirko
@@ -83,30 +83,34 @@ async def on_message(message):
         stats = sorted(minus5.get_stats(), key=lambda x: x[1], reverse=True)
         msg = 'Statystyki obrażania matek:\n'
         for user_id, count in stats:
-            user_data = await client.get_user_info(user_id)  #tu error
+            user_data = await client.fetch_user(user_id)
             msg += user_data.display_name + ': ' + str(count * -5) + ' punktów\n'
 
         await message.channel.send(msg)
 
-    if message.content.startswith('!recalcminus5') and (message.author.name == "negocki" or message.author.name == "Kristopher38" or message.author.name == "w0jt1"):
-        print('Recalculating minus5 stats, this might take a while')
-        server_logs = []
-        recalc_stats = {}
-
-        for channel in client.get_all_channels():
-            channel_logs = client.logs_from(channel, limit=10000, before=startup_time) # hardcoded 10k messages limit #drugi error
-            async for msg in channel_logs:
-                for reaction in msg.reactions:
-                    if reaction.custom_emoji:
-                        if reaction.emoji.name == "minus5":
-                            if msg.author.id in recalc_stats:
-                                recalc_stats[msg.author.id] += reaction.count
-                            else:
-                                recalc_stats[msg.author.id] = reaction.count
-
-        minus5.recalculate_stats(recalc_stats)
-        print('Recalculating finished')
-        await message.channel.send('Recalculating finished')
+    #recalc sie sypie, niech ktos
+    # if message.content.startswith('!recalcminus5') and (message.author.name == "negocki" or message.author.name == "Kristopher38" or message.author.name == "w0jt1"):
+    #     print('Recalculating minus5 stats, this might take a while')
+    #     messages = []
+    #     recalc_stats = {}
+    #
+    #     for channel in client.get_all_channels():
+    #         # channel_logs = client.logs_from(channel, limit=10000, before=startup_time) # hardcoded 10k messages limit #drugi error
+    #         # channel_logs = await channel.history(limit=123).flatten()  # hardcoded 10k messages limit #tu jest blad
+    #         # async for msg in channel_logs:
+    #         messages = await channel.history(limit=123).flatten()
+    #         async for msg in messages:
+    #             for reaction in msg.reactions:
+    #                 if reaction.custom_emoji:
+    #                     if reaction.emoji.name == "minus5":
+    #                         if msg.author.id in recalc_stats:
+    #                             recalc_stats[msg.author.id] += reaction.count
+    #                         else:
+    #                             recalc_stats[msg.author.id] = reaction.count
+    #
+    #     minus5.recalculate_stats(recalc_stats)
+    #     print('Recalculating finished')
+    #     await message.channel.send('Recalculating finished')
 
 @client.event
 async def on_ready():
@@ -116,23 +120,19 @@ async def on_ready():
     print('------')
     await client.change_presence(activity=discord.Game(name="!help"))
 
-#tez nie dziala xD
-
 @client.event
 async def on_reaction_add(reaction, user):
     if reaction.custom_emoji:
         if reaction.emoji.name == "minus5":
             minus5.increment_user(reaction.message.author)
-            print('Dodano emotke')
 
 @client.event
 async def on_reaction_remove(reaction, user):
     if reaction.custom_emoji:
         if reaction.emoji.name == "minus5":
             minus5.decrement_user(reaction.message.author)
-            print('usunieto emotke')
 
-client.run('')
+client.run('NTE5ODMzNzExMzQ1NDAxODU2.XPLSVg.aDmPMEv0pmOZMrIvLazz0Cqwpww')
 
 
 
