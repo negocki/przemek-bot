@@ -132,7 +132,7 @@ async def on_reaction_remove(reaction, user):
         if reaction.emoji.name == "minus5":
             minus5.decrement_user(reaction.message.author)
 
-client.run('NTE5ODMzNzExMzQ1NDAxODU2.XPLSVg.aDmPMEv0pmOZMrIvLazz0Cqwpww')
+client.run('')
 
 
 
